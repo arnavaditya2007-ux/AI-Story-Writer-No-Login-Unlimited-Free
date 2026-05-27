@@ -3,42 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Story Generator - Creative & Powerful</title>
+    <title>AI Story Generator - Workspace</title>
     <meta name="description" content="Generate natural, undetectable, and highly original stories tailored to your writing tone, genre, and length requirements with StoryAI.">
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter for UI, Lora for Story -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-wrapper">
-        <header class="app-header">
-            <div class="header-top">
+    <div class="workspace">
+        
+        <!-- Left Sidebar: Controls -->
+        <aside class="sidebar">
+            <header class="sidebar-header">
                 <div class="logo">
                     <i data-lucide="book-open"></i>
                     <span>StoryAI</span>
                 </div>
-                <button id="themeToggle" class="btn-theme" title="Toggle Theme">
-                    <i data-lucide="moon"></i>
-                </button>
-            </div>
-            <h1 class="main-title">Creative, Immersive, and Original</h1>
-        </header>
+                <p class="sidebar-subtitle">Creative Workspace</p>
+            </header>
 
-        <main class="main-content">
-            <!-- Input Card -->
-            <section class="card input-card">
+            <div class="sidebar-content">
                 <div class="form-group">
                     <label for="topic">Story Concept / Prompt</label>
                     <textarea id="topic" placeholder="e.g., A lone astronaut discovers a strange artifact on a distant moon..." rows="4" autocomplete="off" spellcheck="false"></textarea>
                 </div>
                 
-                <div class="form-row">
+                <div class="form-group-stack">
                     <div class="form-group">
-                        <label for="genre">Story Genre</label>
+                        <label for="genre">Genre</label>
                         <select id="genre">
                             <option value="Fantasy">Fantasy</option>
                             <option value="Science Fiction" selected>Science Fiction</option>
@@ -48,8 +44,6 @@
                             <option value="Realistic Fiction">Realistic Fiction</option>
                             <option value="Historical Fiction">Historical Fiction</option>
                             <option value="Adventure">Adventure</option>
-                            <option value="Fairy Tale">Fairy Tale</option>
-                            <option value="Dystopian">Dystopian</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -82,187 +76,80 @@
                             <option value="Open Ending">Open Ending</option>
                         </select>
                     </div>
+                </div>
+
+                <div class="advanced-settings">
                     <div class="form-group">
                         <label for="characters">Main Characters (Optional)</label>
-                        <input type="text" id="characters" placeholder="e.g., Elara (brave knight), Jax (rogue)" autocomplete="off">
+                        <input type="text" id="characters" placeholder="e.g., Elara, Jax" autocomplete="off">
                     </div>
                     <div class="form-group">
                         <label for="setting">Setting / Time Period (Optional)</label>
                         <input type="text" id="setting" placeholder="e.g., Cyberpunk City, 2099" autocomplete="off">
                     </div>
                 </div>
+            </div>
 
+            <div class="sidebar-footer">
                 <button id="generateBtn" class="btn-primary">
-                    <span>Generate Story</span>
                     <i data-lucide="sparkles"></i>
+                    <span>Generate Story</span>
                 </button>
-            </section>
+            </div>
+        </aside>
 
-            <!-- Output Card -->
-            <section class="card output-card hidden" id="outputCard">
-                <div class="output-header">
-                    <h2>Generated Story</h2>
-                    <div class="output-actions">
-                        <button class="btn-action btn-humanize" id="humanizeBtn" title="Humanize Story to Bypass AI Detectors">
-                            <i data-lucide="wand-2"></i>
-                            <span>Humanize</span>
-                        </button>
-                        <button class="btn-action btn-copy" id="copyBtn" title="Copy to Clipboard">
-                            <i data-lucide="copy"></i>
-                            <span>Copy</span>
-                        </button>
-                    </div>
+        <!-- Right Main: Editor & Output -->
+        <main class="main-editor">
+            
+            <div class="editor-toolbar">
+                <div class="editor-actions" id="editorActions">
+                    <button class="btn-action btn-humanize" id="humanizeBtn" title="Humanize Story to Bypass AI Detectors" disabled>
+                        <i data-lucide="wand-2"></i>
+                        <span>Humanize</span>
+                    </button>
+                    <button class="btn-action btn-copy" id="copyBtn" title="Copy to Clipboard">
+                        <i data-lucide="copy"></i>
+                        <span>Copy</span>
+                    </button>
                 </div>
-                <div class="essay-viewport" id="essayOutput"></div>
-            </section>
+                <button id="themeToggle" class="btn-theme" title="Toggle Theme">
+                    <i data-lucide="moon"></i>
+                </button>
+            </div>
 
-            <!-- How It Works & Advantages Section -->
-            <section class="card info-section">
-                <div class="info-intro">
-                    <h2>How StoryAI Achieves Human-Like Writing</h2>
-                    <p>Most AI story generators produce text that feels stiff and repetitive. StoryAI takes a different approach by generating narratives that are virtually indistinguishable from human authors. It creates a natural sentence flow, uses varied grammatical structures, and relies on original phrasing tailored to the context. The result is content that reads authentically, adapts to different genres and tones, and avoids the common patterns that give other AI tools away.</p>
-                </div>
+            <div class="editor-content-area">
                 
-                <div class="info-grid">
-                    <!-- Column 1: How It Works -->
-                    <div class="info-column">
-                        <h3><i data-lucide="help-circle"></i> How It Works</h3>
+                <!-- Initial State: Info Section -->
+                <div id="placeholderSection" class="placeholder-section">
+                    <div class="welcome-box">
+                        <div class="welcome-icon">
+                            <i data-lucide="feather"></i>
+                        </div>
+                        <h2>Your creative workspace.</h2>
+                        <p>Configure your narrative settings in the sidebar, type a prompt, and generate highly original, human-like stories.</p>
                         
-                        <div class="step-card">
-                            <span class="step-num">1</span>
-                            <div>
-                                <h4>Creative Analysis</h4>
-                                <p>Analyzes your prompt, characters, and setting before drafting the narrative.</p>
+                        <div class="features-grid">
+                            <div class="feature-item">
+                                <i data-lucide="eye-off"></i>
+                                <span>Undetectable AI</span>
                             </div>
-                        </div>
-
-                        <div class="step-card">
-                            <span class="step-num">2</span>
-                            <div>
-                                <h4>Sentence Variation</h4>
-                                <p>Intentionally varies sentence lengths and syntactic flows to mimic human pacing and burstiness.</p>
+                            <div class="feature-item">
+                                <i data-lucide="sliders"></i>
+                                <span>Precise Control</span>
                             </div>
-                        </div>
-
-                        <div class="step-card">
-                            <span class="step-num">3</span>
-                            <div>
-                                <h4>Anti-AI Refining</h4>
-                                <p>Removes predictable AI transitions and repetitive phrasing to sound natural.</p>
-                            </div>
-                        </div>
-
-                        <div class="step-card">
-                            <span class="step-num">4</span>
-                            <div>
-                                <h4>Genre Alignment</h4>
-                                <p>Tailors vocabulary, voice, and sentence structures to perfectly match your selected genre and tone.</p>
-                            </div>
-                        </div>
-
-                        <div class="step-card">
-                            <span class="step-num">5</span>
-                            <div>
-                                <h4>Custom Plot Flow</h4>
-                                <p>Follows your character guidelines and ending preference precisely to craft a satisfying arc.</p>
-                            </div>
-                        </div>
-
-                        <div class="step-card">
-                            <span class="step-num">6</span>
-                            <div>
-                                <h4>Clean HTML Rendering</h4>
-                                <p>Outputs the final story in clean HTML markup, formatted beautifully and ready to copy.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Column 2: Key Advantages -->
-                    <div class="info-column">
-                        <h3><i data-lucide="shield-check"></i> Key Advantages</h3>
-
-                        <div class="advantage-card">
-                            <i data-lucide="eye-off" class="adv-icon"></i>
-                            <div>
-                                <h4>Undetectable Outputs</h4>
-                                <p>Bypasses rigid detector platforms by avoiding common machine probability patterns.</p>
-                            </div>
-                        </div>
-
-                        <div class="advantage-card">
-                            <i data-lucide="sliders" class="adv-icon"></i>
-                            <div>
-                                <h4>Tailored Flexibility</h4>
-                                <p>Adapts fluidly across numerous creative genres and narrative tones.</p>
-                            </div>
-                        </div>
-
-                        <div class="advantage-card">
-                            <i data-lucide="badge-check" class="adv-icon"></i>
-                            <div>
-                                <h4>100% Original Content</h4>
-                                <p>Generates contextually unique stories from scratch, ensuring complete originality.</p>
-                            </div>
-                        </div>
-
-                        <div class="advantage-card">
-                            <i data-lucide="user-minus" class="adv-icon"></i>
-                            <div>
-                                <h4>No Login Required</h4>
-                                <p>Start generating instantly without creating an account or sharing personal info.</p>
-                            </div>
-                        </div>
-
-                        <div class="advantage-card">
-                            <i data-lucide="ban" class="adv-icon"></i>
-                            <div>
-                                <h4>100% Ad-Free</h4>
-                                <p>Enjoy a clean, premium writing space completely free of distracting advertisements.</p>
-                            </div>
-                        </div>
-
-                        <div class="advantage-card">
-                            <i data-lucide="zap" class="adv-icon"></i>
-                            <div>
-                                <h4>Fast & Time-Saving</h4>
-                                <p>Get fully-structured stories in seconds, overcoming writer's block instantly.</p>
+                            <div class="feature-item">
+                                <i data-lucide="zap"></i>
+                                <span>Fast Generation</span>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <div class="disclaimer-alert">
-                <div class="disclaimer-icon-wrapper">
-                    <i data-lucide="info"></i>
-                </div>
-                <div class="disclaimer-content">
-                    <strong>Disclaimer on AI Detection</strong>
-                    <p>While every effort is made to bypass detection algorithms and mimic human writing patterns, no tool can guarantee 100% accuracy against advanced AI detectors. AI-generated content can occasionally still be flagged. We strongly encourage you to use your own creative mind and utilize this tool primarily as a reference or drafting aid. We are not responsible for any flagged, penalized, or detected content generated by this tool.</p>
-                </div>
+                <!-- Generated Story Output -->
+                <div class="essay-viewport hidden" id="essayOutput"></div>
+                
             </div>
-
         </main>
-
-        <!-- Thank You Section -->
-        <section class="thankyou-section">
-            <div class="thankyou-glow"></div>
-            <div class="thankyou-icon">
-                <i data-lucide="heart"></i>
-            </div>
-            <h2 class="thankyou-title">Thank You for Using StoryAI</h2>
-            <p class="thankyou-sub">This tool was built with care to help authors and dreamers everywhere save time, stay inspired, and tell better stories.</p>
-            <p class="thankyou-note">If StoryAI has helped you, consider sharing it with a friend or supporting the project. It keeps the lights on and the AI running.</p>
-
-            <div class="thankyou-divider">
-                <span></span>
-                <i data-lucide="pen-tool"></i>
-                <span></span>
-            </div>
-
-            <p class="thankyou-footer">Made by <strong>Arnav Aditya</strong></p>
-        </section>
-
     </div>
 
     <!-- Feedback Modal -->
@@ -301,13 +188,12 @@
                 </div>
             </form>
             
-            <!-- Success State -->
             <div class="feedback-success" id="feedbackSuccessState">
                 <div class="success-icon-wrapper">
                     <i data-lucide="sparkles"></i>
                 </div>
                 <h3>Thank You!</h3>
-                <p>Your response has been submitted. We appreciate your feedback to make StoryAI even better.</p>
+                <p>Your response has been submitted.</p>
             </div>
         </div>
     </div>
@@ -316,7 +202,7 @@
     <a href="donate.html" class="btn-donate-float" title="Support the Developer">
         <i data-lucide="heart"></i>
     </a>
-    <!-- Application Script -->
+    
     <script src="app.js"></script>
 </body>
 </html>

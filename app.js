@@ -8,7 +8,7 @@ const endingSelect = document.getElementById('ending');
 const charactersInput = document.getElementById('characters');
 const settingInput = document.getElementById('setting');
 const generateBtn = document.getElementById('generateBtn');
-const outputCard = document.getElementById('outputCard');
+const placeholderSection = document.getElementById('placeholderSection');
 const essayOutput = document.getElementById('essayOutput');
 const copyBtn = document.getElementById('copyBtn');
 const themeToggle = document.getElementById('themeToggle');
@@ -174,9 +174,9 @@ generateBtn.addEventListener('click', async () => {
             </div>
         `;
         
-        outputCard.classList.remove('hidden');
+        placeholderSection.classList.add('hidden');
+        essayOutput.classList.remove('hidden');
         essayOutput.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Structuring narrative and gathering context...</p>';
-        outputCard.scrollIntoView({ behavior: 'smooth' });
 
         let totalWordTarget = 800;
         const lengthVal = lengthSelect.value;
