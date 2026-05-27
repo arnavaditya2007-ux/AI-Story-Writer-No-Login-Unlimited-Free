@@ -1,5 +1,7 @@
 // Vercel Edge Runtime — 30s execution limit (vs 10s for serverless on Hobby plan)
+// Trigger redeployment to pick up GEMINI_API_KEY
 export const config = { runtime: 'edge' };
+
 
 const CORS = {
     'Access-Control-Allow-Origin': '*',
