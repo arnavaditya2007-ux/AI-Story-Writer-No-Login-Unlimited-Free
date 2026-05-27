@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support StoryAI - Workspace</title>
+    <meta name="description" content="Support StoryAI to keep our creative, high-quality, and undetectable story writing tools active.">
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=1.2.0">
+    <style>
+        body {
+            background: var(--editor-bg);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-family: var(--font-ui);
+            color: var(--text-primary);
+        }
+
+        .donate-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 520px;
+            padding: 24px;
+            box-sizing: border-box;
+            height: 100vh;
+            justify-content: space-between;
+        }
+
+        .donate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 60px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+        body.light-theme .btn-back:hover {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        .btn-back svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .donate-main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donate-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 48px 40px;
+            text-align: center;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: cardFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes cardFadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .heart-icon-container {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-glow);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        body.light-theme .heart-icon-container {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+            border-color: rgba(79, 70, 229, 0.15);
+        }
+
+        .heart-icon-container svg {
+            width: 28px;
+            height: 28px;
+            stroke: currentColor;
+            fill: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .donate-card h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        .coming-soon-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-primary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        body.light-theme .coming-soon-badge {
+            background: rgba(15, 23, 42, 0.05);
+            border-color: rgba(15, 23, 42, 0.1);
+        }
+
+        .donate-card p {
+            color: var(--text-secondary);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 32px;
+            max-width: 360px;
+        }
+
+        .btn-action-primary {
+            width: 100%;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: linear-gradient(180deg, #ffffff 0%, #e4e4e7 100%);
+            color: #000000;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-action-primary:hover {
+            background: linear-gradient(180deg, #ffffff 0%, #d4d4d8 100%);
+            transform: translateY(-1.5px);
+            box-shadow: 0 6px 16px rgba(255, 255, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        body.light-theme .btn-action-primary {
+            background: linear-gradient(180deg, #4f46e5 0%, #4338ca 100%);
+            color: #ffffff;
+            border-color: rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        body.light-theme .btn-action-primary:hover {
+            background: linear-gradient(180deg, #4338ca 0%, #3730a3 100%);
+            box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-action-primary svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+        }
+
+        .donate-footer {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="donate-container">
+        <header class="donate-header">
+            <a href="index.html" class="btn-back">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                <span>Back to Workspace</span>
+            </a>
+            <button id="themeToggle" class="btn-theme" title="Toggle Theme">
+                <!-- SVG injected dynamically -->
+            </button>
+        </header>
+
+        <main class="donate-main">
+            <div class="donate-card">
+                <div class="heart-icon-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                </div>
+                
+                <span class="coming-soon-badge">Coming Soon</span>
+                
+                <h1>Support StoryAI</h1>
+                <p>We are working hard to integrate secure and flexible payment options to support the project.</p>
+                
+                <a href="index.html" class="btn-action-primary">
+                    <span>Return to StoryAI</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+            </div>
+        </main>
+
+        <footer class="donate-footer">
+            <span>Made with care by Arnav Aditya</span>
+        </footer>
+    </div>
+
+    <script>
+        // Inline SVG Definitions matching the rest of StoryAI
+        const ICONS = {
+            sun: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+            moon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`
+        };
+
+        const themeToggle = document.getElementById('themeToggle');
+
+        // Theme Switcher Logic (Synced with localStorage theme)
+        let currentTheme = null;
+        try {
+            currentTheme = localStorage.getItem('theme');
+        } catch (e) {}
+
+        if (currentTheme === 'light') {
+            document.body.classList.add('light-theme');
+            themeToggle.innerHTML = ICONS.sun;
+        } else {
+            themeToggle.innerHTML = ICONS.moon;
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-theme');
+            let theme = 'dark';
+            if (document.body.classList.contains('light-theme')) {
+                theme = 'light';
+                themeToggle.innerHTML = ICONS.sun;
+            } else {
+                themeToggle.innerHTML = ICONS.moon;
+            }
+            try {
+                localStorage.setItem('theme', theme);
+            } catch (e) {}
+        });
+    </script>
+</body>
+</html>

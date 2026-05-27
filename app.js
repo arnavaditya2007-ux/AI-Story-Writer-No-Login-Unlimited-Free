@@ -57,13 +57,30 @@ const fetchWithTimeout = async (url, options = {}, timeoutMs = 30000, buttonElem
 let isGenerating = false;
 
 // Persist & guard topic against browser autofill clearing it
-let topicGuard = localStorage.getItem('storyTopic') || '';
-if (topicGuard) topicInput.value = topicGuard;
+let topicGuard = '';
+try {
+    topicGuard = localStorage.getItem('storyTopic') || '';
+} catch (e) { console.warn('localStorage access denied'); }
+
+// Auto-resize textarea function
+const autoResizeTextarea = (el) => {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+};
+
+if (topicGuard) {
+    topicInput.value = topicGuard;
+    // Initial resize if content exists
+    autoResizeTextarea(topicInput);
+}
 
 topicInput.addEventListener('input', () => {
     if (topicInput.value) topicGuard = topicInput.value;
-    localStorage.setItem('storyTopic', topicInput.value);
+    try { localStorage.setItem('storyTopic', topicInput.value); } catch(e) {}
+    autoResizeTextarea(topicInput);
 });
+
+window.addEventListener('resize', () => autoResizeTextarea(topicInput));
 
 // Restore topic immediately if any control change clears it
 [genreSelect, toneSelect, lengthSelect, endingSelect, charactersInput, settingInput].forEach(el => {
@@ -74,27 +91,39 @@ topicInput.addEventListener('input', () => {
     });
 });
 
+// Inline SVG definitions to bypass Brave/browser script blocking
+const ICONS = {
+    sun: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>`,
+    moon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>`,
+    sparkles: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275Z"/><path d="m5 3 1 2.5L8.5 6 6 7 5 9.5 4 7 1.5 6 4 5.5Z"/><path d="m19 17 1 2.5 2.5.5-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1Z"/></svg>`,
+    "user-check": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-check"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>`,
+    copy: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>`,
+    check: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check"><path d="M20 6 9 17l-5-5"/></svg>`,
+};
+
 // Theme Switcher Logic
-const currentTheme = localStorage.getItem('theme');
+let currentTheme = null;
+try {
+    currentTheme = localStorage.getItem('theme');
+} catch (e) {}
+
 if (currentTheme === 'light') {
     document.body.classList.add('light-theme');
-    themeToggle.innerHTML = '<i data-lucide="sun"></i>';
+    themeToggle.innerHTML = ICONS.sun;
 } else {
-    themeToggle.innerHTML = '<i data-lucide="moon"></i>';
+    themeToggle.innerHTML = ICONS.moon;
 }
-lucide.createIcons();
 
 themeToggle.addEventListener('click', () => {
     document.body.classList.toggle('light-theme');
     let theme = 'dark';
     if (document.body.classList.contains('light-theme')) {
         theme = 'light';
-        themeToggle.innerHTML = '<i data-lucide="sun"></i>';
+        themeToggle.innerHTML = ICONS.sun;
     } else {
-        themeToggle.innerHTML = '<i data-lucide="moon"></i>';
+        themeToggle.innerHTML = ICONS.moon;
     }
-    localStorage.setItem('theme', theme);
-    lucide.createIcons();
+    try { localStorage.setItem('theme', theme); } catch(e) {}
 });
 
 // Shared HTML cleaner
@@ -154,6 +183,67 @@ const filterPunctuation = (html) => {
     return div.innerHTML;
 };
 
+// Update Story Viewport Display with dynamic editorial styling and metadata
+const updateStoryDisplay = (html) => {
+    let formattedHtml = html;
+    
+    // Fallback: If AI returned a single giant paragraph block, split it programmatically into multiple paragraphs
+    const div = document.createElement('div');
+    div.innerHTML = formattedHtml;
+    const paragraphs = div.querySelectorAll('p');
+    if (paragraphs.length === 1) {
+        const p = paragraphs[0];
+        const text = p.innerText.trim();
+        // Split by sentences (matching periods, question marks, or exclamation marks followed by space or end)
+        const sentences = text.match(/[^.!?]+[.!?]+(\s+|$)/g);
+        if (sentences && sentences.length > 5) {
+            let pBlocks = '';
+            let currentPara = [];
+            sentences.forEach((sentence, idx) => {
+                currentPara.push(sentence.trim());
+                // Split every 4 sentences for clean pacing
+                if (currentPara.length === 4 || idx === sentences.length - 1) {
+                    pBlocks += `<p>${currentPara.join(' ')}</p>`;
+                    currentPara = [];
+                }
+            });
+            p.outerHTML = pBlocks;
+            formattedHtml = div.innerHTML;
+        }
+    }
+
+    essayOutput.innerHTML = formattedHtml;
+    essayOutput.classList.add('has-story');
+    
+    // Force a normal safe bottom spacing buffer programmatically
+    essayOutput.style.setProperty('padding-bottom', '120px', 'important');
+    essayOutput.style.setProperty('display', 'block', 'important');
+    
+    const h2 = essayOutput.querySelector('h2');
+    if (h2) {
+        // Calculate words inside paragraphs
+        const paragraphs = Array.from(essayOutput.querySelectorAll('p')).map(p => p.innerText.trim());
+        const plainText = paragraphs.join(' ');
+        const wordCount = plainText.trim().split(/\s+/).filter(Boolean).length;
+        
+        // Get current configuration values
+        const genre = genreSelect.value;
+        const tone = toneSelect.value;
+        const ending = endingSelect.value;
+        
+        // Create metadata layout element
+        const metadataHtml = `
+            <div class="story-metadata">
+                <span>Genre: ${genre}</span>
+                <span>Tone: ${tone}</span>
+                <span>Ending: ${ending}</span>
+                <span>${wordCount} words</span>
+            </div>
+        `;
+        h2.insertAdjacentHTML('afterend', metadataHtml);
+    }
+};
+
 // Generate Action
 generateBtn.addEventListener('click', async () => {
     if (isGenerating) return;
@@ -176,7 +266,16 @@ generateBtn.addEventListener('click', async () => {
         
         placeholderSection.classList.add('hidden');
         essayOutput.classList.remove('hidden');
+        essayOutput.classList.remove('has-story');
         essayOutput.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Structuring narrative and gathering context...</p>';
+        
+        // Reset paddings/margins to default during loading
+        essayOutput.style.removeProperty('padding-bottom');
+        essayOutput.style.removeProperty('margin-bottom');
+        const editorArea = document.querySelector('.editor-content-area');
+        if (editorArea) {
+            editorArea.style.removeProperty('padding-bottom');
+        }
 
         let totalWordTarget = 800;
         const lengthVal = lengthSelect.value;
@@ -186,20 +285,19 @@ generateBtn.addEventListener('click', async () => {
             totalWordTarget = 1500;
         }
 
-        const prompt = `You MUST strictly follow these user configuration rules to write a compelling story:
-                        1. Core Concept: Write a story based on this concept: "${topic}".
-                        2. Genre: The story genre is "${genreSelect.value}".
-                        3. Tone: Adhere strictly to a "${toneSelect.value}" narrative tone.
-                        4. Target Length: Write approximately ${totalWordTarget} words in total.
-                        5. Ending: The story MUST end with a "${endingSelect.value}".
+        const prompt = `CRITICAL MANDATE: You MUST strictly and faithfully adhere to each of the following configuration options:
+                        - Core Concept: "${topic}".
+                        - Required Genre: "${genreSelect.value}" (The narrative must strongly represent this genre).
+                        - Required Narrative Tone: "${toneSelect.value}" (The vocabulary, description, and character voices must align with this tone).
+                        - Required Target Length: Approximately ${totalWordTarget} words.
+                        - Required Story Ending Style: The story MUST finish with a "${endingSelect.value}".
                         
-                        ${charactersInput.value.trim() ? `6. Main Characters (Optional Rule): Include these characters: "${charactersInput.value.trim()}".` : ''}
-                        ${settingInput.value.trim() ? `7. Setting (Optional Rule): The story must be set in: "${settingInput.value.trim()}".` : ''}
+                        ${charactersInput.value.trim() ? `- Required Characters: Include these characters and integrate them into the story: "${charactersInput.value.trim()}".` : ''}
+                        ${settingInput.value.trim() ? `- Required Setting/Period: Set the story in: "${settingInput.value.trim()}".` : ''}
 
-                        Heading/Title Requirement: You MUST start the story with a single <h2> heading containing a creative, engaging title for the story. Do NOT use any other <h2> tags or subheadings anywhere else.
-                         
+                        Title Requirement: Start directly with a single <h2> tag containing a creative title for the story. Do NOT use any other headings.
                         Formatting & Completion:
-                        1. Structure the story beautifully with well-paced paragraphs.
+                        1. Structure the story beautifully with multiple well-paced, distinct paragraphs (MUST use at least 4-6 separate paragraphs for Short/Long Stories, and at least 3 separate paragraphs for Flash Fiction). Never return the entire story in a single paragraph block.
                         2. The total word count of the entire story MUST be approximately ${totalWordTarget} words.
                         3. Output the response formatted directly as HTML using <p> tags for all paragraphs and a single <h2> tag at the very beginning for the title.
                         4. Do not include any markdown code block fences (like \`\`\`html) or metadata notes. Start directly with the <h2> tag.
@@ -215,11 +313,13 @@ generateBtn.addEventListener('click', async () => {
                 messages: [
                     {
                         role: 'system',
-                        content: `You are an AI story generator. Write a complete, immersive story based on the concept and options.
-CRITICAL: You MUST write the entire story including the title (in a single <h2> tag) and all paragraphs (in separate <p> tags).
-Output the response formatted directly as HTML. Do NOT include any markdown code block fences (like \`\`\`html) or metadata notes. Start directly with the <h2> tag.
-Absolutely NO bold text is allowed. Everything must be standard weight.
-Absolutely NO long dashes or em-dashes (— or --) are allowed.`
+                        content: `You are an AI story generator. You MUST write a complete, immersive story that strictly and faithfully adheres to all user configuration rules (Concept, Genre, Narrative Tone, Target Length, Ending style, and optional Characters/Setting).
+CRITICAL STYLING & FORMATTING RULES:
+1. You MUST write the entire story including the title (wrapped in a single <h2> tag at the very start) and all paragraphs (wrapped in separate <p> tags).
+2. The story MUST be partitioned into multiple distinct, well-paced paragraphs (minimum of 3-4 paragraphs for shorter lengths, and 5+ paragraphs for longer lengths). Never output the text as a single giant paragraph block.
+3. Output the response formatted directly as raw HTML. Do NOT include any markdown code block fences (like \`\`\`html) or metadata notes. Start directly with the <h2> tag.
+4. Absolutely NO bold text is allowed (do not use <strong>, <b>, or markdown **). Everything inside paragraphs must be standard weight.
+5. Absolutely NO long dashes or em-dashes (— or --) are allowed. Use commas or split into separate sentences instead.`
                     },
                     { role: 'user', content: prompt }
                 ]
@@ -229,8 +329,8 @@ Absolutely NO long dashes or em-dashes (— or --) are allowed.`
         const data = await response.json();
 
         if (!response.ok) {
-            const errMsg = data?.error?.message || \`API error (HTTP \${response.status})\`;
-            essayOutput.innerHTML = \`<p style="color: #ef4444;">API Error: \${errMsg}</p>\`;
+            const errMsg = data?.error?.message || `API error (HTTP ${response.status})`;
+            essayOutput.innerHTML = `<p style="color: #ef4444;">API Error: ${errMsg}</p>`;
             console.error('API Error:', data);
             return;
         }
@@ -238,17 +338,16 @@ Absolutely NO long dashes or em-dashes (— or --) are allowed.`
         if (data.choices && data.choices[0]?.message?.content) {
             let html = cleanHtml(data.choices[0].message.content);
 
-            essayOutput.innerHTML = html;
+            updateStoryDisplay(html);
             
             humanizeBtn.disabled = false;
-            humanizeBtn.innerHTML = \`
-                <i data-lucide="wand-2"></i>
+            humanizeBtn.innerHTML = `
+                ${ICONS["user-check"]}
                 <span>Humanize</span>
-            \`;
-            lucide.createIcons();
+            `;
         } else {
             const msg = 'No content was returned. Please try again with a different concept.';
-            essayOutput.innerHTML = \`<p style="color: #ef4444;">\${msg}</p>\`;
+            essayOutput.innerHTML = `<p style="color: #ef4444;">${msg}</p>`;
             console.error('Unexpected response:', data);
         }
     } catch (err) {
@@ -257,11 +356,10 @@ Absolutely NO long dashes or em-dashes (— or --) are allowed.`
     } finally {
         isGenerating = false;
         generateBtn.disabled = false;
-        generateBtn.innerHTML = \`
+        generateBtn.innerHTML = `
             <span>Generate Story</span>
-            <i data-lucide="sparkles"></i>
-        \`;
-        lucide.createIcons();
+            ${ICONS.sparkles}
+        `;
     }
 });
 
@@ -279,21 +377,30 @@ humanizeBtn.addEventListener('click', async () => {
     
     const paragraphTexts = Array.from(tempDiv.querySelectorAll('p')).map(p => p.innerText.trim());
     const titleText = (tempDiv.querySelector('h2')?.innerText || '').trim();
-    const plainStory = (titleText ? \`Title: \${titleText}\n\n\` : '') + paragraphTexts.join('\n\n');
+    const plainStory = (titleText ? `Title: ${titleText}\n\n` : '') + paragraphTexts.join('\n\n');
 
-    const originalWordCount = plainStory.trim().split(/\\s+/).filter(Boolean).length || 500;
+    const originalWordCount = plainStory.trim().split(/\s+/).filter(Boolean).length || 500;
 
     try {
         isGenerating = true;
         humanizeBtn.disabled = true;
-        humanizeBtn.innerHTML = \`
+        humanizeBtn.innerHTML = `
             <span>Humanizing</span>
             <div class="loading-dots">
                 <span></span><span></span><span></span>
             </div>
-        \`;
+        `;
         
+        essayOutput.classList.remove('has-story');
         essayOutput.innerHTML = '<p style="color: var(--text-secondary); font-style: italic;">Humanizing text to bypass AI detectors...</p>';
+        
+        // Reset paddings/margins to default during loading
+        essayOutput.style.removeProperty('padding-bottom');
+        essayOutput.style.removeProperty('margin-bottom');
+        const editorArea = document.querySelector('.editor-content-area');
+        if (editorArea) {
+            editorArea.style.removeProperty('padding-bottom');
+        }
 
         const response = await fetchWithTimeout(API_ENDPOINT, {
             method: 'POST',
@@ -303,16 +410,16 @@ humanizeBtn.addEventListener('click', async () => {
                 messages: [
                     {
                         role: 'system',
-                        content: \`Before you write, perform a critical humanization rewrite to guarantee the final text completely bypasses all AI detectors (like ZeroGPT, Turnitin, GPTZero). Bypass AI detectors by breaking the predictable, uniform patterns that machine learning models rely on to flag text.
+                        content: `Before you write, perform a critical humanization rewrite to guarantee the final text completely bypasses all AI detectors (like ZeroGPT, Turnitin, GPTZero). Bypass AI detectors by breaking the predictable, uniform patterns that machine learning models rely on to flag text.
 
 STAGE 2: CRITICAL HUMANIZATION (ANTI-AI DETECTION)
 You must completely rewrite the story using these actionable editing techniques:
 
-0. User Configuration Rules (MUST FOLLOW):
-   - Concept: Stay strictly on the concept: "\${topicInput.value.trim()}".
-   - Genre: Adhere to the "\${genreSelect.value}" genre.
-   - Tone: Maintain the "\${toneSelect.value}" tone.
-   - Ending: Keep the "\${endingSelect.value}".
+0. User Configuration Rules (MANDATORY COMPLIANCE):
+    - Core Concept: Maintain the concept: "${topicInput.value.trim()}".
+    - Required Genre: Strictly preserve the "${genreSelect.value}" genre styling and tropes.
+    - Required Narrative Tone: Keep the "${toneSelect.value}" tone active in the rewrite.
+    - Required Story Ending: Preserve the "${endingSelect.value}" style ending.
 
 1. Short Words & Short Sentences (Simple Grammar): A real human typing quickly wants to save time. They avoid long words and long sentences. You MUST use short, everyday words (1-2 syllables). Keep your logic simple and your grammar extremely clear and easy to understand. To maintain burstiness, mix ultra-short sentences (2-4 words) with basic sentences (8-12 words), but completely avoid complex, winding lines and long vocabulary.
 
@@ -335,19 +442,19 @@ You must completely rewrite the story using these actionable editing techniques:
    To understand the exact style, vocabulary level, and syntactic clumsiness you MUST mimic, study this 100% human-written example. Notice the complete lack of transitions, the basic vocabulary ("very old place"), the awkward phrasing, and the lack of complex opening clauses:
    "There is no other National identity like India’s in this world. It is also a very old place full of culture that is more than just its geography. Indian geography goes from north to south about 4,000 miles (6,400 km). The height of north of India has snow capped mountains and the south has warm, sunny beaches. This range in height and geography can be seen through the variety of languages, ethnic groups, and customs in all parts of India. The ever changing nature of cultural patterns has developed over an extended period and is still developing today. To study cultural patterns of National Identity in India requires consideration of their economy, social structure and global influence."
 
-9. Word Count: Your humanized output MUST be between \${originalWordCount - 15} and \${originalWordCount + 15} words.
+10. Paragraph Distribution: The humanized output MUST preserve or enhance the multi-paragraph structure of the input story. You MUST output the story partitioned into multiple separate, well-paced paragraphs (minimum of 3-6 paragraphs). Never collapse the rewritten text into a single paragraph block.
 
 OUTPUT REQUIREMENT:
-Only output the final, fully humanized story formatted directly as HTML (<h2> for the title, <p> for the paragraphs). Do not output any markdown code blocks, labels, or explanations. Start directly with the <h2> tag.\`
+Only output the final, fully humanized story formatted directly as HTML (<h2> for the title, <p> for the paragraphs). The rewritten story MUST consist of multiple distinct, well-spaced paragraphs. Do not output any markdown code blocks, labels, or explanations. Start directly with the <h2> tag.`
                     },
                     {
                         role: 'user',
-                        content: \`Please rewrite the following story to fully humanize it according to the system instructions. Do not change the general plot, but completely rephrase the sentences and vocabulary to ensure it sounds like a human and bypasses all AI detectors.
+                        content: `Please rewrite the following story to fully humanize it according to the system instructions. Do not change the general plot, but completely rephrase the sentences and vocabulary to ensure it sounds like a human and bypasses all AI detectors.
 
-Word count constraint: Your humanized output MUST contain between \${originalWordCount - 15} and \${originalWordCount + 15} words (the input has exactly \${originalWordCount} words). Do not summarize or shorten any section.
+Word count constraint: Your humanized output MUST contain between ${originalWordCount - 15} and ${originalWordCount + 15} words (the input has exactly ${originalWordCount} words). Do not summarize or shorten any section.
 
 Story:
-\${plainStory}\`
+${plainStory}`
                     }
                 ]
             })
@@ -356,9 +463,9 @@ Story:
         const data = await response.json();
 
         if (!response.ok) {
-            const errMsg = data?.error?.message || \`API error (HTTP \${response.status})\`;
+            const errMsg = data?.error?.message || `API error (HTTP ${response.status})`;
             essayOutput.innerHTML = currentStory; 
-            essayOutput.insertAdjacentHTML('afterbegin', \`<p style="color:#ef4444;margin-bottom:1rem;">Humanizer Error: \${errMsg}</p>\`);
+            essayOutput.insertAdjacentHTML('afterbegin', `<p style="color:#ef4444;margin-bottom:1rem;">Humanizer Error: ${errMsg}</p>`);
             return;
         }
 
@@ -367,14 +474,13 @@ Story:
             html = capitalizeFirstLetters(html);
             html = filterPunctuation(html);
 
-            essayOutput.innerHTML = html;
+            updateStoryDisplay(html);
             
             humanizeBtn.disabled = true;
-            humanizeBtn.innerHTML = \`
-                <i data-lucide="check"></i>
+            humanizeBtn.innerHTML = `
+                ${ICONS.check}
                 <span>Humanized!</span>
-            \`;
-            lucide.createIcons();
+            `;
             triggerFeedbackModalOnce();
         } else {
             essayOutput.innerHTML = currentStory; 
@@ -388,26 +494,28 @@ Story:
         isGenerating = false;
         if (!humanizeBtn.innerHTML.includes('Humanized')) {
             humanizeBtn.disabled = false;
-            humanizeBtn.innerHTML = \`
-                <i data-lucide="wand-2"></i>
+            humanizeBtn.innerHTML = `
+                ${ICONS["user-check"]}
                 <span>Humanize</span>
-            \`;
-            lucide.createIcons();
+            `;
         }
     }
 });
 
 copyBtn.addEventListener('click', () => {
-    const text = essayOutput.innerText;
+    // Clone output viewport to strip metadata from copied text
+    const clone = essayOutput.cloneNode(true);
+    const metadata = clone.querySelector('.story-metadata');
+    if (metadata) metadata.remove();
+    
+    const text = clone.innerText;
     if (!text) return;
 
     navigator.clipboard.writeText(text).then(() => {
         const originalText = copyBtn.innerHTML;
-        copyBtn.innerHTML = '<i data-lucide="check"></i><span>Copied!</span>';
-        lucide.createIcons();
+        copyBtn.innerHTML = `${ICONS.check}<span>Copied!</span>`;
         setTimeout(() => {
             copyBtn.innerHTML = originalText;
-            lucide.createIcons();
         }, 2000);
     }).catch(err => {
         console.error('Failed to copy: ', err);
@@ -466,12 +574,12 @@ function initFeedbackModal() {
         starBtns.forEach(btn => btn.disabled = true);
         commentField.disabled = true;
 
-        submitBtn.innerHTML = \`
+        submitBtn.innerHTML = `
             <span>Submitting</span>
             <div class="loading-dots">
                 <span></span><span></span><span></span>
             </div>
-        \`;
+        `;
 
         setTimeout(() => {
             console.log('Feedback submitted:', {
@@ -492,9 +600,15 @@ function triggerFeedbackModalOnce() {
     const feedbackModal = document.getElementById('feedbackModal');
     if (!feedbackModal) return;
 
-    const prompted = localStorage.getItem('storyai_feedback_prompted');
+    let prompted = false;
+    try {
+        prompted = localStorage.getItem('storyai_feedback_prompted') === 'true';
+    } catch(e) {}
+    
     if (!prompted) {
-        localStorage.setItem('storyai_feedback_prompted', 'true');
+        try {
+            localStorage.setItem('storyai_feedback_prompted', 'true');
+        } catch(e) {}
         setTimeout(() => {
             feedbackModal.classList.add('active');
         }, 1500);
@@ -502,3 +616,118 @@ function triggerFeedbackModalOnce() {
 }
 
 initFeedbackModal();
+
+// Custom Dropdowns (Premium Luxury Replacement)
+function initCustomDropdowns() {
+    const selects = document.querySelectorAll('.sidebar select');
+    
+    selects.forEach(select => {
+        // Prevent double-initialization
+        if (select.previousElementSibling && select.previousElementSibling.classList.contains('select-custom')) {
+            return;
+        }
+        
+        // Create custom select wrapper
+        const wrapper = document.createElement('div');
+        wrapper.className = 'select-custom';
+        
+        // Create trigger element
+        const trigger = document.createElement('div');
+        trigger.className = 'select-custom-trigger';
+        
+        const label = document.createElement('span');
+        // Get selected option text
+        const selectedOption = select.options[select.selectedIndex];
+        label.textContent = selectedOption ? selectedOption.textContent : '';
+        
+        const chevron = document.createElement('div');
+        chevron.className = 'chevron-icon';
+        chevron.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`;
+        
+        trigger.appendChild(label);
+        trigger.appendChild(chevron);
+        wrapper.appendChild(trigger);
+        
+        // Create options container
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'select-custom-options';
+        
+        // Populate options
+        Array.from(select.options).forEach(opt => {
+            const optDiv = document.createElement('div');
+            optDiv.className = 'select-custom-option';
+            optDiv.textContent = opt.textContent;
+            optDiv.dataset.value = opt.value;
+            
+            if (opt.selected) {
+                optDiv.classList.add('selected');
+            }
+            
+            optDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Select value in native select
+                select.value = opt.value;
+                // Dispatch change event
+                select.dispatchEvent(new Event('change'));
+                
+                // Update trigger text
+                label.textContent = opt.textContent;
+                
+                // Update active state in list
+                optionsContainer.querySelectorAll('.select-custom-option').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                optDiv.classList.add('selected');
+                
+                // Close dropdown
+                wrapper.classList.remove('open');
+            });
+            
+            optionsContainer.appendChild(optDiv);
+        });
+        
+        wrapper.appendChild(optionsContainer);
+        
+        // Insert wrapper right before select
+        select.parentNode.insertBefore(wrapper, select);
+        // Hide native select
+        select.style.display = 'none';
+        
+        // Toggle dropdown open
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            
+            // Close all other dropdowns first
+            document.querySelectorAll('.select-custom').forEach(item => {
+                if (item !== wrapper) item.classList.remove('open');
+            });
+            
+            wrapper.classList.toggle('open');
+        });
+    });
+    
+    // Close dropdowns on clicking outside
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.select-custom').forEach(item => {
+            item.classList.remove('open');
+        });
+    });
+}
+
+initCustomDropdowns();
+
+// Advanced Parameters Accordion Toggle
+function initAdvancedAccordion() {
+    const toggle = document.getElementById('advancedToggle');
+    const content = document.getElementById('advancedContent');
+    if (!toggle || !content) return;
+    
+    toggle.addEventListener('click', () => {
+        const accordion = toggle.closest('.advanced-accordion');
+        if (accordion) {
+            accordion.classList.toggle('open');
+        }
+    });
+}
+
+initAdvancedAccordion();
